@@ -3,8 +3,13 @@ from config import BOT_TOKEN
 from handlers import start, handle_message
 from scheduler import start_scheduler
 from database import init_db
+import sys
 
 def main():
+    if not BOT_TOKEN or not BOT_TOKEN.startswith(""):
+        print("❌ BOT_TOKEN не найден или некорректен. Получи токен от https://t.me/BotFather и добавь его в переменные окружения.")
+        sys.exit(1)
+
     init_db()
     start_scheduler()
 
@@ -17,3 +22,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
