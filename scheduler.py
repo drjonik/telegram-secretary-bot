@@ -1,25 +1,25 @@
-from apscheduler.schedulers.background import BackgroundScheduler
-from database import get_reminders
-from datetime import datetime
 from telegram import Bot
+from apscheduler.schedulers.background import BackgroundScheduler
 from config import BOT_TOKEN
-
-bot = Bot(token=BOT_TOKEN)
-scheduler = BackgroundScheduler()
-
-def send_reminder(chat_id, text):
-    bot.send_message(chat_id=chat_id, text=f"🔔 Напоминание: {text}")
-
-def schedule_reminders():
-    reminders = get_reminders()
-    for r in reminders:
-        chat_id, text, time_str, interval = r[1], r[2], r[3], r[4]
-        time = datetime.fromisoformat(time_str)
-        if interval:
-            scheduler.add_job(send_reminder, 'interval', days=int(interval), args=[chat_id, text], next_run_time=time)
-        else:
-            scheduler.add_job(send_reminder, 'date', run_date=time, args=[chat_id, text])
+import os
 
 def start_scheduler():
-    schedule_reminders()
+    if not BOT_TOKEN or not BOT_TOKEN.startswith(""):
+        print("❌ BOT_TOKEN не найден или некорректен. Получи токен от https://t.me/BotFather.")
+        return
+
+    bot = Bot(token=BOT_TOKEN)
+    scheduler = BackgroundScheduler()
+
+    def send_reminder():
+        # Замените chat_id на ID пользователя или группы
+        chat_id = os.getenv("CHAT_ID")
+        if chat_id:
+            bot.send_message(chat_id=chat_id, text="⏰ Напоминание!")
+        else:
+            print("⚠️ CHAT_ID не указан. Напоминание не отправлено.")
+
+    # Пример: отправлять напоминание каждый час
+    scheduler.add_job(send_reminder, 'interval', hours=1)
     scheduler.start()
+    print("📅 Планировщик запущен.")
